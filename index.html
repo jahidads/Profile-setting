@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            opacity: 0.8;
+        }
+
+        .profile-content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .profile-picture {
+            text-align: center;
+        }
+
+        .image-preview {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #f0f0f0;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            overflow: hidden;
+        }
+
+        .image-preview i {
+            font-size: 50px;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4b6cb7;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #3a559c;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #4b6cb7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(75, 108, 183, 0.2);
+        }
+
+        .password-strength {
+            margin-top: 5px;
+            height: 5px;
+            border-radius: 5px;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .validation-message {
+            font-size: 12px;
+            color: #dc3545;
+            margin-top: 5px;
+            min-height: 18px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .save-btn {
+            background: #4b6cb7;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #3a559c;
+        }
+
+        .cancel-btn {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Profile Settings</h1>
+            <p>Update your personal information</p>
+        </header>
+        
+        <div class="profile-content">
+            <div class="profile-picture">
+                <div class="image-preview" id="image-preview">
+                    <i class="fas fa-user"></i>
+                </div>
+                <label for="file-input" class="upload-btn">
+                    <i class="fas fa-upload"></i> Upload Photo
+                </label>
+                <input type="file" id="file-input" accept="image/*">
+            </div>
+            
+            <div class="profile-info">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                    <div class="validation-message" id="email-validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password (leave blank to keep current)</label>
+                    <input type="password" id="password" placeholder="Enter new password">
+                    <div class="password-strength">
+                        <div class="strength-meter" id="password-strength-meter"></div>
+                    </div>
+                    <div class="validation-message" id="password-validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" rows="4" placeholder="Tell us about yourself"></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button class="save-btn" id="save-btn">Save Changes</button>
+                    <button class="cancel-btn" id="cancel-btn">Cancel</button>
+                </div>
+                
+                <div class="success-message" id="success-message">
+                    Your profile has been updated successfully!
+                </div>
+                
+                <div class="error-message" id="error-message">
+                    There was an error updating your profile. Please try again.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const fileInput = document.getElementById('file-input');
+            const imagePreview = document.getElementById('image-preview');
+            const emailInput = document.getElementById('email');
+            const emailValidation = document.getElementById('email-validation');
+            const passwordInput = document.getElementById('password');
+            const passwordValidation = document.getElementById('password-validation');
+            const passwordStrengthMeter = document.getElementById('password-strength-meter');
+            const saveBtn = document.getElementById('save-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Sample user data (would typically come from server)
+            const userData = {
+                username: 'johndoe',
+                email: 'john.doe@example.com',
+                bio: 'Frontend developer passionate about creating beautiful and functional user interfaces.',
+                profilePicture: null
+            };
+            
+            // Initialize form with user data
+            document.getElementById('username').value = userData.username;
+            document.getElementById('email').value = userData.email;
+            document.getElementById('bio').value = userData.bio;
+            
+            // Profile picture upload and preview
+            fileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Profile Preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Email validation
+            emailInput.addEventListener('blur', function() {
+                const email = emailInput.value.trim();
+                if (!email) {
+                    emailValidation.textContent = 'Email is required';
+                    return;
+                }
+                
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    emailValidation.textContent = 'Please enter a valid email address';
+                } else {
+                    emailValidation.textContent = '';
+                }
+            });
+            
+            // Password strength validation
+            passwordInput.addEventListener('input', function() {
+                const password = passwordInput.value;
+                
+                if (!password) {
+                    passwordStrengthMeter.style.width = '0%';
+                    passwordStrengthMeter.style.background = '#f0f0f0';
+                    passwordValidation.textContent = '';
+                    return;
+                }
+                
+                // Calculate strength
+                let strength = 0;
+                if (password.length >= 8) strength += 25;
+                if (/[A-Z]/.test(password)) strength += 25;
+                if (/[0-9]/.test(password)) strength += 25;
+                if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+                
+                // Update strength meter
+                passwordStrengthMeter.style.width = `${strength}%`;
+                
+                // Set color based on strength
+                if (strength < 50) {
+                    passwordStrengthMeter.style.background = '#dc3545';
+                    passwordValidation.textContent = 'Password is weak';
+                } else if (strength < 75) {
+                    passwordStrengthMeter.style.background = '#ffc107';
+                    passwordValidation.textContent = 'Password is medium';
+                } else {
+                    passwordStrengthMeter.style.background = '#28a745';
+                    passwordValidation.textContent = 'Password is strong';
+                }
+            });
+            
+            // Form submission
+            saveBtn.addEventListener('click', function() {
+                // Validate before submission
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                
+                let isValid = true;
+                
+                // Email validation
+                if (!email) {
+                    emailValidation.textContent = 'Email is required';
+                    isValid = false;
+                } else {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        emailValidation.textContent = 'Please enter a valid email address';
+                        isValid = false;
+                    }
+                }
+                
+                // Password validation (if provided)
+                if (password) {
+                    if (password.length < 8) {
+                        passwordValidation.textContent = 'Password must be at least 8 characters';
+                        isValid = false;
+                    }
+                }
+                
+                if (!isValid) {
+                    return;
+                }
+                
+                // Simulate async form submission
+                simulateAsyncSubmit();
+            });
+            
+            // Cancel button
+            cancelBtn.addEventListener('click', function() {
+                // Reset form to original values
+                document.getElementById('username').value = userData.username;
+                document.getElementById('email').value = userData.email;
+                document.getElementById('password').value = '';
+                document.getElementById('bio').value = userData.bio;
+                
+                // Reset validation messages
+                emailValidation.textContent = '';
+                passwordValidation.textContent = '';
+                passwordStrengthMeter.style.width = '0%';
+                
+                // Reset image if changed
+                if (!userData.profilePicture) {
+                    imagePreview.innerHTML = '<i class="fas fa-user"></i>';
+                }
+                
+                // Hide messages
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+            });
+            
+            // Simulate async form submission to server
+            function simulateAsyncSubmit() {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+                
+                // Simulate network request with timeout
+                setTimeout(function() {
+                    // Randomly determine success/failure for demo purposes
+                    const isSuccess = Math.random() > 0.3;
+                    
+                    if (isSuccess) {
+                        successMessage.style.display = 'block';
+                        errorMessage.style.display = 'none';
+                        
+                        // Update user data with new values
+                        userData.username = document.getElementById('username').value;
+                        userData.email = document.getElementById('email').value;
+                        userData.bio = document.getElementById('bio').value;
+                        
+                        // Clear password field
+                        document.getElementById('password').value = '';
+                    } else {
+                        errorMessage.style.display = 'block';
+                        successMessage.style.display = 'none';
+                    }
+                    
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Changes';
+                    
+                    // Hide messages after 3 seconds
+                    setTimeout(function() {
+                        successMessage.style.display = 'none';
+                        errorMessage.style.display = 'none';
+                    }, 3000);
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>
